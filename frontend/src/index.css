@@ -1,0 +1,32 @@
+@import 'tailwindcss';
+
+/* ===== Identitas warna Universitas Halu Oleo ===== */
+@theme {
+  --color-uho-navy: #0f2350;      /* biru dongker utama logo UHO */
+  --color-uho-blue: #1a4fa0;      /* biru sekunder */
+  --color-uho-sky: #3b82c4;       /* aksen terang */
+  --color-uho-gold: #d4a017;      /* kuning/emas — teknik & kemewahan */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    Roboto, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-slate-50 font-sans text-slate-900 antialiased;
+}
+
+/* Scrollbar minimalis */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background: #cbd5e1;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
