@@ -1,20 +1,10 @@
-import { Outlet, createRoute } from '@tanstack/react-router'
+import { Outlet, createRoute, redirect } from '@tanstack/react-router'
 import { Header } from '@/components/layout/header'
 import { Sidebar } from '@/components/layout/sidebar'
-import { useAuth } from '@/hooks/use-auth'
+import { readSession } from '@/hooks/use-auth'
 import { rootRoute } from './__root'
 
 export function LayoutPage() {
-  const { user } = useAuth()
-
-  if (!user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">
-        Mengalihkan ke halaman masuk…
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen">
       <Sidebar />
@@ -32,4 +22,14 @@ export const layoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: '_layout',
   component: LayoutPage,
+  // Guard dijalankan SEBELUM komponen dirender: jika tidak ada sesi,
+  // pengguna langsung dialihkan ke /login (dengan parameter ?redirect).
+  beforeLoad: ({ location }) => {
+    if (!readSession()) {
+      throw redirect({
+        to: '/login',
+        search: { redirect: location.href },
+      })
+    }
+  },
 })

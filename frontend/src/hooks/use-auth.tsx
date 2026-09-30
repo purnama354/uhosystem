@@ -21,11 +21,28 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [sessionUser, setSessionUser] = useState<User | null>(() => {
-    const raw = localStorage.getItem('simfak.session')
+const SESSION_KEY = 'simfak.session'
+
+/** Dibaca juga oleh route guard (beforeLoad), jadi murni & tanpa React. */
+export function readSession(): User | null {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY)
     return raw ? (JSON.parse(raw) as User) : null
-  })
+  } catch {
+    return null
+  }
+}
+
+export function writeSession(user: User) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify(user))
+}
+
+export function clearSession() {
+  localStorage.removeItem(SESSION_KEY)
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [sessionUser, setSessionUser] = useState<User | null>(readSession)
 
   // Di produksi, ganti inisial state ini dengan hasil query /auth/me.
   useQuery({
@@ -35,12 +52,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   const login = useCallback((user: User) => {
-    localStorage.setItem('simfak.session', JSON.stringify(user))
+    writeSession(user)
     setSessionUser(user)
   }, [])
 
   const logout = useCallback(() => {
-    localStorage.removeItem('simfak.session')
+    clearSession()
     setSessionUser(null)
   }, [])
 

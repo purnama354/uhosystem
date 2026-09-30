@@ -1,19 +1,24 @@
 import { useMutation } from '@tanstack/react-query'
-import { Navigate, createRoute, useNavigate, useSearch } from '@tanstack/react-router'
+import {
+  createRoute,
+  redirect,
+  useNavigate,
+  useSearch,
+} from '@tanstack/react-router'
 import { useState, type FormEvent } from 'react'
 import { GraduationCap, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
-import { useAuth } from '@/hooks/use-auth'
+import { readSession, useAuth } from '@/hooks/use-auth'
 import { rootRoute } from './__root'
 import { mockUsers } from '@/mocks/data'
 import { authService } from '@/services'
 import { ROLE_LABELS } from '@/types'
 
 function LoginPage() {
-  const { user, login } = useAuth()
+  const { login } = useAuth()
   const navigate = useNavigate()
   const { redirect } = useSearch({ from: '/login' })
   const [email, setEmail] = useState('dekan@uho.ac.id')
@@ -22,11 +27,9 @@ function LoginPage() {
     mutationFn: (em: string) => authService.login(em),
     onSuccess: (u) => {
       login(u)
-      navigate({ to: redirect ?? '/' })
+      navigate({ to: redirect ?? '/', replace: true })
     },
   })
-
-  if (user) return <Navigate to="/" />
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -127,6 +130,12 @@ export const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/login',
   component: LoginPage,
+  // Jika sudah punya sesi, tidak perlu melihat form login lagi.
+  beforeLoad: () => {
+    if (readSession()) {
+      throw redirect({ to: '/', replace: true })
+    }
+  },
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
     redirect: typeof search.redirect === 'string' ? search.redirect : undefined,
   }),
